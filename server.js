@@ -16,8 +16,8 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 const BUCKET = process.env.SUPABASE_BUCKET || 'private-photos'
 const PORT = process.env.PORT || 3000
 
-// Serve static files from /public
-app.use(express.static(path.join(__dirname, 'public')))
+// Serve static files from the current directory (so CSS/JS next to index.html are served too)
+app.use(express.static(__dirname))
 app.use(express.json())
 
 app.get('/api/posts', async (req, res) => {
@@ -65,9 +65,9 @@ app.delete('/api/posts/:id', async (req, res) => {
   res.json({ ok: true })
 })
 
-// Catch-all for SPA routing — always send index.html
+// Catch-all route to serve top-level index.html
 app.get('*', (req, res) => {
-  const file = path.join(__dirname, 'public', 'index.html')
+  const file = path.join(__dirname, 'index.html')
   if (fs.existsSync(file)) {
     res.sendFile(file)
   } else {
