@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cozy Private Photo Journal</title>
+<style>
+:root{--bg:#0c0f18;--bg2:#12182a;--card:#151b2b;--ink:#e9eef8;--muted:#94a6c5;--accent:#f2c078;--accent2:#b88a62;--ring:rgba(242,192,120,.35);--danger:#ff6b6b}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;color:var(--ink);font:16px/1.55 ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji;background:
+radial-gradient(1200px 800px at 15% -10%,#1a2140 0%,var(--bg) 60%),
+conic-gradient(from 210deg at 80% -10%, rgba(242,192,120,.08), transparent 25% 75%, rgba(184,138,98,.08)),
+linear-gradient(180deg,var(--bg2),var(--bg))}
+.grain:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.035"/></svg>');mix-blend-mode:soft-light}
+header{position:sticky;top:0;z-index:5;backdrop-filter:saturate(120%) blur(8px);background:linear-gradient(180deg,rgba(18,24,42,.85),rgba(18,24,42,.35) 60%,transparent)}
+.title{max-width:420px;margin:0 auto;padding:18px 16px;display:flex;align-items:center;gap:10px}
+.orb{width:12px;height:12px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 16px rgba(242,192,120,.6)}
+h1{margin:0;font-size:20px;letter-spacing:.3px;font-weight:800}
+main{min-height:100%;display:grid;grid-template-rows:auto 1fr}
+.column{width:min(100%,420px);margin:12px auto 96px;display:grid;gap:16px;padding:0 12px}
+.card{background:linear-gradient(180deg,#151b2b,#11182a);border-radius:18px;border:1px solid #202a41;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.post{padding:12px;display:grid;gap:10px}
+.post-img{width:100%;height:420px;object-fit:cover;border-radius:14px;background:#0d1220;border:1px solid #202a41}
+.caption{font-family:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif;font-size:16px;letter-spacing:.1px;background:linear-gradient(135deg,rgba(242,192,120,.15),transparent 30%);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:pre-wrap}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
+.btn{appearance:none;border:none;border-radius:12px;padding:9px 14px;font-weight:700;cursor:pointer;transition:transform .04s ease,box-shadow .2s,opacity .2s,background .2s}
+.btn:active{transform:translateY(1px)}.btn-ghost{background:transparent;color:var(--muted);border:1px solid #293552}.btn-danger{background:transparent;color:var(--danger);border:1px solid #3b2039}
+.empty{text-align:center;color:var(--muted);padding:30px;border:1px dashed #2a3754;border-radius:16px}
+.composer{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:10px 12px 14px;display:grid;place-items:center;background:linear-gradient(180deg,transparent,rgba(10,12,20,.85) 25%,rgba(10,12,20,.95));backdrop-filter:saturate(130%) blur(8px)}
+.composer-inner{width:min(100%,420px);display:grid;gap:10px;background:linear-gradient(180deg,#141a2a,#111727);border:1px solid #202a41;border-radius:16px;padding:10px;box-shadow:0 8px 30px rgba(0,0,0,.45)}
+.row{display:flex;gap:8px;align-items:center}
+.file{position:relative;flex:0 0 auto}
+.file input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-label{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;border:1px dashed #2b3956;color:var(--muted);background:#12182a;cursor:pointer}
+.thumb{width:44px;height:44px;border-radius:10px;object-fit:cover;display:none;border:1px solid #2b3956;background:#0d1220}
+textarea{flex:1 1 auto;width:100%;min-height:44px;max-height:120px;resize:vertical;background:#0f1626;color:var(--ink);border:1px solid #23304a;border-radius:12px;padding:10px 12px;outline:none;transition:box-shadow .2s,border-color .2s,background .2s}
+textarea:focus{border-color:var(--accent);box-shadow:0 0 0 6px var(--ring)}
+.post-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#1b1b1b;box-shadow:0 8px 20px rgba(242,192,120,.25)}
+.post-btn:disabled{opacity:.5;cursor:not-allowed}
+</style>
+</head>
+<body class="grain">
+<header><div class="title"><div class="orb"></div><h1>Cozy Private Photo Journal</h1></div></header>
+<main><section class="column" id="feed"></section></main>
+<footer class="composer">
+  <div class="composer-inner">
+    <div class="row">
+      <div class="file">
+        <img id="thumb" class="thumb" alt="">
+        <label class="file-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V9h2v10h14V7h-5V5h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2ZM11 16l-3-4-2 3v1h12l-4-6-3 4Z"/></svg>
+          Add photo
+          <input id="file" type="file" accept="image/*" aria-label="Choose image">
+        </label>
+      </div>
+      <textarea id="caption" placeholder="Write a sweet caption…"></textarea>
+      <button id="post" class="btn post-btn" disabled>Post</button>
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <button id="clear" class="btn btn-ghost">Clear</button>
+    </div>
+  </div>
+</footer>
+
+<script>
+const feed=document.getElementById('feed')
+const fileInput=document.getElementById('file')
+const thumb=document.getElementById('thumb')
+const caption=document.getElementById('caption')
+const postBtn=document.getElementById('post')
+const clearBtn=document.getElementById('clear')
+let fileBlob=null
+
+function fmt(ts){const d=new Date(ts);return d.toLocaleString([], {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+
+async function load(){
+  const r=await fetch('/api/posts'); const data=await r.json()
+  feed.innerHTML=''
+  if(!data.length){const e=document.createElement('div');e.className='empty';e.textContent='No posts yet.';feed.appendChild(e);return}
+  for(const p of data){
+    const card=document.createElement('article');card.className='card post'
+    const img=document.createElement('img');img.className='post-img';img.src=p.signed_url;img.alt=p.caption||'photo'
+    const cap=p.caption?document.createElement('div'):null
+    if(cap){cap.className='caption';cap.textContent=p.caption}
+    const meta=document.createElement('div');meta.className='meta'
+    const time=document.createElement('span');time.textContent=fmt(p.created_at||Date.now())
+    const del=document.createElement('button');del.className='btn btn-danger';del.textContent='Delete'
+    del.addEventListener('click',async()=>{await fetch('/api/posts/'+p.id,{method:'DELETE'});load()})
+    meta.appendChild(time);meta.appendChild(del)
+    card.appendChild(img); if(cap) card.appendChild(cap); card.appendChild(meta)
+    feed.appendChild(card)
+  }
+  window.scrollTo({top:0,behavior:'smooth'})
+}
+
+function setThumb(src){ if(src){thumb.src=src;thumb.style.display='block';postBtn.disabled=false} else {thumb.removeAttribute('src');thumb.style.display='none';postBtn.disabled=true} }
+
+fileInput.addEventListener('change',e=>{
+  const f=e.target.files?.[0]; if(!f) return
+  fileBlob=f; const r=new FileReader(); r.onload=()=>setThumb(r.result); r.readAsDataURL(f)
+})
+
+clearBtn.addEventListener('click',()=>{fileBlob=null;setThumb(null);caption.value=''})
+
+postBtn.addEventListener('click',async()=>{
+  if(!fileBlob) return
+  const fd=new FormData(); fd.append('image',fileBlob); fd.append('caption',caption.value.trim())
+  await fetch('/api/posts',{method:'POST',body:fd})
+  fileBlob=null;setThumb(null);caption.value=''
+  load()
+})
+
+load()
+</script>
+</body>
+</html>
